@@ -1,25 +1,25 @@
-"""End-to-end smoke test: send one short prompt through the agent + MCP and
+"""End-to-end smoke test: send one short prompt through the agent and
 confirm a trace lands in LangFuse. Run after wiring tracing.
 
 Usage: `python scripts/smoke_langfuse.py`
 
-Requires the live LANGFUSE_* and OPENAI_API_KEY + MCP_SERVER_URL in `.env`.
-Costs ~ a fraction of a cent (one gpt-4o-mini call, no tools invoked).
+Requires the live LANGFUSE_* and OPENAI_API_KEY in `.env`. Costs ~ a
+fraction of a cent (one gpt-4o-mini call, no tools invoked).
 """
+
 from __future__ import annotations
 
 import asyncio
 import os
 
+from agents import Agent, Runner
 from dotenv import load_dotenv
 
+from agent_config import MODEL
+from tracing import setup_langfuse
+
 load_dotenv()
-
-# Import app to trigger _setup_langfuse() at module load.
-import app  # noqa: F401, E402
-from agents import Agent, Runner  # noqa: E402
-
-from agent_config import MODEL  # noqa: E402
+setup_langfuse()
 
 
 async def main() -> None:

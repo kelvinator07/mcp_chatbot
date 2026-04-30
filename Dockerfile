@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install Python deps first so the layer caches across code-only changes.
 COPY pyproject.toml ./
-COPY app.py agent_config.py guardrails.py ./
+COPY app.py agent_config.py guardrails.py tracing.py ./
 RUN pip install -e .
 
 # Copy the rest of the runtime files (welcome page + Chainlit config).
