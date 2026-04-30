@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-# TODO use .env file for model name
-MODEL = "gpt-4o-mini"
+import os
+
+from dotenv import load_dotenv
+
+# Load .env early so MODEL resolves correctly even when this module is
+# imported before app.py's own load_dotenv() call. dotenv is idempotent.
+load_dotenv()
+
+# Configurable via the OPENAI_MODEL env var; defaults to the cost-effective
+# tier the brief asks for.
+MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 # Tools the MCP server exposes that touch a specific customer's data. The
 # system prompt and the input-side guardrail both reference this set.
