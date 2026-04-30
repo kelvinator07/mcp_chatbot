@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 import chainlit as cl
-from agents import Agent, Runner
+from agents import Agent, Runner, set_default_openai_client
 from agents.mcp import MCPServerStreamableHttp
 from dotenv import load_dotenv
 from openai.types.responses import ResponseTextDeltaEvent
@@ -12,6 +12,29 @@ from agent_config import MODEL, SYSTEM_PROMPT
 from guardrails import redact_pin, scrub_input
 
 load_dotenv()
+
+
+def _setup_langfuse() -> None:
+    """Wire LangFuse tracing if creds are present, no-op otherwise.
+
+    Uses langfuse's drop-in OpenAI client wrapper — every chat-completions
+    call the agent makes is auto-traced. The MCP tool dispatch isn't
+    captured at this layer (that needs a tracing processor on the agents
+    SDK), but for v1 the LLM-call view is what matters most.
+    """
+    if not (os.environ.get("LANGFUSE_PUBLIC_KEY") and os.environ.get("LANGFUSE_SECRET_KEY")):
+        return
+    try:
+        from langfuse.openai import AsyncOpenAI as TracedOpenAI
+    except ImportError:
+        print("[trace] langfuse not installed; skipping", flush=True)
+        return
+    set_default_openai_client(TracedOpenAI())
+    host = os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com")
+    print(f"[trace] LangFuse tracing enabled -> {host}", flush=True)
+
+
+_setup_langfuse()
 
 WELCOME = (
     "Hi! I'm **Meridian Support**.\n\n"
