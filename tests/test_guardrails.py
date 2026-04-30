@@ -110,3 +110,15 @@ class TestRedactPin:
     def test_redacts_multiple(self) -> None:
         out = redact_pin("PINs 1234 and 5678")
         assert out == "PINs **** and ****"
+
+    def test_does_not_redact_digits_inside_skus(self) -> None:
+        # SKUs contain 4-digit runs after a hyphen — must NOT be masked.
+        assert redact_pin("Buy SKU COM-0001 please") == "Buy SKU COM-0001 please"
+        assert redact_pin("MON-0054 and KEY-0123") == "MON-0054 and KEY-0123"
+
+    def test_redacts_pin_with_punctuation_around_it(self) -> None:
+        assert redact_pin("My PIN: 1234.") == "My PIN: ****."
+        assert redact_pin("(7912)") == "(****)"
+
+    def test_leaves_alphanumeric_runs_alone(self) -> None:
+        assert redact_pin("hash abc1234def") == "hash abc1234def"

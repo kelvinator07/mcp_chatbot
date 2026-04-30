@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-
 # TODO use .env file for model name
 MODEL = "gpt-4o-mini"
 
-# Tools the MCP server exposes that touch a specific customer's data. The system prompt and the input-side guardrail both reference this set.
+# Tools the MCP server exposes that touch a specific customer's data. The
+# system prompt and the input-side guardrail both reference this set.
 AUTH_REQUIRED_TOOLS = frozenset(
     {
         "get_customer",
@@ -22,7 +22,8 @@ PUBLIC_TOOLS = frozenset(
     }
 )
 
-# `verify_customer_pin` is the auth gate itself — neither public nor auth-required. Calling it IS the authentication step.
+# `verify_customer_pin` is the auth gate itself — neither public nor
+# auth-required. Calling it IS the authentication step.
 
 SYSTEM_PROMPT = """\
 You are Meridian Support, the AI assistant for Meridian Electronics — a retailer
@@ -61,6 +62,29 @@ You only help with Meridian Electronics products and orders. If asked about
 anything off-topic (general questions, other companies, jokes, coding help,
 politics), politely decline in one sentence and steer back: "I can help you
 browse Meridian products, place orders, or check your order status."
+
+# Filtering by criteria the tools can't filter on natively
+The product tools only accept these filters:
+- list_products: category, is_active
+- search_products: query (free-text match on name/description)
+- get_product: sku
+
+When the customer asks for products matching criteria the tools cannot filter
+on directly — price range, screen size, brand, port count, color, weight,
+review score, anything else — you MUST do the filtering yourself:
+1. Fetch the candidate set with list_products (by category if useful) or
+   search_products. Cast a wider net than you need.
+2. Read each product in the response and KEEP only items that match ALL of
+   the customer's stated criteria. Be strict — if the customer asks for items
+   "between $200 and $300", do NOT include a $167 item; do NOT include a $310
+   item.
+3. Present only the filtered results.
+4. If nothing matches, say so plainly. Do NOT pad the answer with items that
+   don't fit. Suggest loosening one criterion if appropriate.
+
+This applies to numeric ranges, exact specs, and combinations — never assume
+"close enough." The tools return formatted text; parse the prices and specs
+out of it before deciding what to show.
 
 # Order placement
 When creating an order:

@@ -21,7 +21,10 @@ _INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"act as (?:a|an)?\s*(?:dan|jailbreak|admin|root)", re.I),
 )
 
-_PIN_PATTERN: re.Pattern[str] = re.compile(r"\b\d{4}\b")
+# A PIN is a standalone 4-digit number. We deliberately require the surrounding
+# characters NOT to be alphanumeric, hyphen, or underscore — otherwise the
+# pattern would also match digit runs inside SKUs like "COM-0001".
+_PIN_PATTERN: re.Pattern[str] = re.compile(r"(?<![A-Za-z0-9\-_])\d{4}(?![A-Za-z0-9\-_])")
 
 
 def scrub_input(text: str) -> str:

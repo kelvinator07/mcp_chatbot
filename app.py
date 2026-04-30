@@ -59,7 +59,17 @@ async def on_message(message: cl.Message) -> None:
         await cl.Message(content="Session not initialised — please refresh the page.").send()
         return
 
-    user_text = scrub_input(message.content)
+    raw_user_text = message.content
+
+    # If the user's message contains what looks like a PIN, immediately mask
+    # it in the displayed bubble. The agent still gets the original text so
+    # verify_customer_pin can authenticate.
+    masked = redact_pin(raw_user_text)
+    if masked != raw_user_text:
+        message.content = masked
+        await message.update()
+
+    user_text = scrub_input(raw_user_text)
     history: list = cl.user_session.get("history") or []
     new_input = history + [{"role": "user", "content": user_text}]
 
@@ -73,12 +83,6 @@ async def on_message(message: cl.Message) -> None:
                 event.data, ResponseTextDeltaEvent
             ):
                 await reply.stream_token(event.data.delta)
-            elif event.type == "run_item_stream_event":
-                item = event.item
-                if item.type == "tool_call_item":
-                    tool_name = getattr(item.raw_item, "name", "tool")
-                    async with cl.Step(name=tool_name, type="tool"):
-                        pass
 
         cl.user_session.set("history", result.to_input_list())
     except Exception as exc:
