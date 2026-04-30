@@ -37,7 +37,7 @@ A production-grade prototype that lets Meridian Electronics customers check prod
 | **UI** | Chainlit `>=2.0` | Native MCP support, built-in step visualization (live tool-call rendering), streaming, sessions. |
 | **Agent loop** | `openai-agents` SDK | Anthropic's MCP-native agent runtime. Auto-discovers MCP tool schemas, handles the loop, supports structured Pydantic outputs. |
 | **Model** | `gpt-4o-mini` | Cost-effective tier per the brief. Strong tool-calling, ~$0.15 / 1M input tokens. |
-| **MCP transport** | Streamable HTTP | Matches the deployed server (`order-mcp-74afyau24q-uc.a.run.app/mcp`). |
+| **MCP transport** | Streamable HTTP | Matches the deployed server (`order-mcp-74afyau2q-uc.a.run.app/mcp`). |
 | **Auth** | Email + 4-digit PIN, verified via MCP tool | Stateless — only the verified email is held in session, never the PIN. |
 | **Tracing** | LangFuse | Per-turn traces, token counts, latency, tool-call timeline — visible during the demo. |
 | **Tests** | pytest + pytest-cov | Guardrails unit tests + lightweight agent integration tests with a mocked MCP. |
@@ -45,3 +45,44 @@ A production-grade prototype that lets Meridian Electronics customers check prod
 | **Deploy** | HuggingFace Spaces (Docker SDK) | Per the brief's minimum-deploy requirement. |
 
 ---
+
+## Deployment
+
+The chatbot deploys to Hugging Face Spaces via GitHub Actions. Every push to `main` runs the test matrix; on success, the workflow force-pushes the repo to the Space's git remote, which triggers HF to rebuild the Docker image.
+
+### One-time setup
+
+1. **Create the Space** on huggingface.co (Spaces → Create new Space → SDK: Docker). Note the Space name.
+
+2. **Generate a write token** at https://huggingface.co/settings/tokens (scope: `Write`).
+
+3. **Add three GitHub Actions secrets** (repo Settings → Secrets and variables → Actions → New repository secret):
+
+   | Secret | Value |
+   |---|---|
+   | `HF_TOKEN` | the write token from step 2 |
+   | `HF_USERNAME` | your Hugging Face username |
+   | `HF_SPACE` | the Space name from step 1 (e.g. `meridian-support`) |
+
+4. **Add runtime secrets to the HF Space** (Space → Settings → Variables and secrets):
+
+   | Secret | Required | Notes |
+   |---|---|---|
+   | `OPENAI_API_KEY` | yes | OpenAI key for `gpt-4o-mini` |
+   | `MCP_SERVER_URL` | yes | `https://order-mcp-74afyau2q-uc.a.run.app/mcp` |
+   | `CHAINLIT_AUTH_SECRET` | yes | output of `chainlit create-secret` |
+   | `LANGFUSE_PUBLIC_KEY` | optional | tracing — leave blank to disable |
+   | `LANGFUSE_SECRET_KEY` | optional | tracing |
+   | `LANGFUSE_HOST` | optional | defaults to `https://cloud.langfuse.com` |
+
+### Deploy
+
+Push to `main`. The Actions workflow runs lint + tests across Python 3.11/3.12, then deploys. The Space rebuilds in ~2-3 minutes; live URL is `https://huggingface.co/spaces/<HF_USERNAME>/<HF_SPACE>`.
+
+### Local Docker
+
+```bash
+docker build -t meridian-support .
+docker run --rm -p 7860:7860 --env-file .env meridian-support
+# open http://localhost:7860
+```
