@@ -1,3 +1,14 @@
+---
+title: Meridian  Chatbot
+emoji: 🛒
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: AI customer support chatbot for Meridian Electronics
+---
+
 # Meridian Support — AI Customer Support Chatbot
 
 A production-grade prototype that lets Meridian Electronics customers check product availability, place orders, look up order history, and authenticate themselves — all through a chat interface backed by an MCP server.
