@@ -33,3 +33,14 @@ build/
 .idea/
 *.swp
 .DS_Store
+
+# Internal assessment reference (not a deliverable)
+Assesment.txt
+Test-Data.txt
+REQUIREMENTS.MD
+Submission.txt
+README copy.md
+
+# Chainlit runtime
+.chainlit/translations/
+.files/
