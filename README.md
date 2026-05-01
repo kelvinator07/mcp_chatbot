@@ -57,6 +57,26 @@ A production-grade prototype that lets Meridian Electronics customers check prod
 
 ---
 
+## Screenshots
+
+The bot in action and behind the scenes. Click any thumbnail to view full-size.
+
+### Welcome screen
+![Initial chat — Meridian Support welcome message](images/First.png)
+
+### Product browse
+![Customer browsing products through the agent](images/Products.png)
+
+### LangFuse traces
+Per-turn observability — model, prompt, response, token counts, latency, and cost for every LLM call.
+![LangFuse trace dashboard for the agent](images/LangFuse%20Traces.png)
+
+### OpenAI usage
+Cost and request volume against the OpenAI API.
+![OpenAI dashboard showing API call traces](images/OpenAI%20Traces.png)
+
+---
+
 ## Deployment
 
 The chatbot deploys to Hugging Face Spaces via GitHub Actions. Every push to `main` runs the test matrix; on success, the workflow force-pushes the repo to the Space's git remote, which triggers HF to rebuild the Docker image.
