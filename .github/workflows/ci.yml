@@ -73,5 +73,13 @@ jobs:
             exit 1
           fi
 
+          # HF Spaces rejects raw binaries in pushed history (recommends Xet/LFS).
+          # Push a clean snapshot: orphan commit with images/ stripped from the
+          # working tree. The GitHub repo keeps images/; only HF sees a slim copy.
+          rm -rf images/
+          git checkout --orphan hf-deploy
+          git add -A
+          git commit -m "deploy: snapshot for HF Space"
+
           git remote add space "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}"
           git push --force space HEAD:main
